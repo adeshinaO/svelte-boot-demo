@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend Files ###
+.DS_Store
+src/main/web/node_modules
+src/main/web/build
+src/main/web/.svelte-kit
+src/main/web/package
+src/main/web/.env
+src/main/web/.env.*
+!src/main/web/.env.example
+src/main/web/vite.config.js.timestamp-*
+src/main/web/vite.config.ts.timestamp-*

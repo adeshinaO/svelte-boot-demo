@@ -38,7 +38,55 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+
+					<!-- here the phase you need: copy build from src/main/web/build exclude app.html -->
+					<execution>
+						<id>copy-svelte-build</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+
+						<configuration>
+							<outputDirectory>src/main/resources/static/build</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/web/build</directory>
+									<excludes>
+										<exclude>app.html</exclude>
+									</excludes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<!-- copy src/main/web/build/app.html TO src/main/resources/templates  -->
+					<execution>
+						<id>copy-app-html-template</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+
+						<configuration>
+							<outputDirectory>src/main/resources/templates</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/web/build</directory>
+									<includes>
+										<include>app.html</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-
 </project>
