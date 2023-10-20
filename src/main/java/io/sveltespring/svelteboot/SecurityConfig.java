@@ -46,10 +46,16 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 public class SecurityConfig {
 
+    // Working implementation of Authentication using OAuth 2.1 Code flow with PKCE.
+
+    // TODO: see: https://www.javaadvent.com/2022/12/a-new-spring-security-authorization-server.html
+    // TODO: Below are requests to the authorize (redirect) and token(POST).
+    //http://localhost:8080/oauth2/authorize?response_type=code&client_id=demo-client&scope=profile&redirect_uri=http://127.0.0.1:8080/about&code_challenge={CODE_CHALLENGE}&code_challenge_method=S256
+    //http://localhost:8080/oauth2/token?client_id=demo-client&redirect_uri=http://127.0.0.1:8080/about&grant_type=authorization_code&code={AUTH_CODE}&code_verifier=u1ta={CODE_VERIFIER}
 
     @Bean
     @Order(1)
@@ -109,6 +115,7 @@ public class SecurityConfig {
                                                       .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                                                       // TODO: redirect URI needs to be public not authenticated
                                                       .redirectUri("http://127.0.0.1:8080/about")
+                                                      // .redirectUris() many URIs at once.
                                                       .postLogoutRedirectUri("http://127.0.0.1:8080/")
                                                       .scope(OidcScopes.OPENID)
                                                       .scope(OidcScopes.PROFILE)
@@ -159,4 +166,5 @@ public class SecurityConfig {
     // TODO: Below are requests to the authorize (redirect) and token(POST).
     //http://localhost:8080/oauth2/authorize?response_type=code&client_id=demo-client&scope=profile&redirect_uri=http://127.0.0.1:8080/about&code_challenge={CODE_CHALLENGE}&code_challenge_method=S256
     //http://localhost:8080/oauth2/token?client_id=demo-client&redirect_uri=http://127.0.0.1:8080/about&grant_type=authorization_code&code={AUTH_CODE}&code_verifier=u1ta={CODE_VERIFIER}
+
 }

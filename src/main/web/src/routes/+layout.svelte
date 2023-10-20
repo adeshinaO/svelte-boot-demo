@@ -1,6 +1,10 @@
 <script>
+
 	import '../app.postcss';
 	import SideMenuItem from '../components/SideMenuItem.svelte';
+
+	// todo: check if user is authenticated, redirect to login otherwise.
+	// todo: create a (protected) route. - use a a layout.svelte that checks for authentication before displaying
 </script>
 
 <div class="flex-row flex font-mono tracking-tight">
