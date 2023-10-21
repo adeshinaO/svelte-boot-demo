@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Please Log In</title>
+</head>
+<body>
+<h1>Please Log In</h1>
+
+<!--
+    Style this. Above email/form, below other content.
+    ""
+-->
+<div th:if="${param.error}">
+    THIS IS A PLACEHOOLDER>>>
+</div>
+
+<form th:action="@{/login}" method="post">
+    <div>
+        <input type="text" name="email" placeholder="Username"/>
+    </div>
+
+    <!-- Password block and actual submit button will have display:none initially -->
+
+    <div id="passcode-block" style="display:none;">
+        <input type="password" name="passcode" placeholder="Password"/>
+    </div>
+    <input type="submit" value="Log in" />
+    <a href="#" onclick="callApi()">Call API</a>
+</form>
+
+<!--
+    When page loads, prompt user for email, password field is not displayed.
+    Email field and a button that triggers API call are displayed.
+
+    When API returns a result(message and status), determine which message blocks and input fields
+    should be revealed. Populate message block.
+
+    If status is:
+       PASSWORD_SENT: Hide email block, reveal password block with message (masked email and password).
+       INVALID_ID: Keep email block visible, display message.
+       UNKNOWN_FAILURE: Keep email block visible, display message (hint to retry).
+
+    Improvements for real implementation:
+
+    At the bottom of the password block, have links for:
+     * resend(start a counter as soon as element is displayed)
+            - API call to just repeat the last send with different code? and update
+     * Send to phone
+            - API call: send new code to phone and  update of message block
+
+-->
+<script>
+    function xxy() {
+        console.log("ODU 534332.....");
+        document.getElementById("passcode-block").style.display = "block";
+    }
+
+    function callApi() {
+        console.log("API call happens here......")
+        document.getElementById("passcode-block").style.display = "block";
+    }
+</script>
+
+
+</body>
+</html>

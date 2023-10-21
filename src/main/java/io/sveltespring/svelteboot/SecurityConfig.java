@@ -17,7 +17,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,10 +28,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -53,15 +57,17 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
         http
                 // Redirect to the login page when not authenticated from the
                 // authorization endpoint
+
+                // NOTE: This tells the authorization where to go if user is not authenticated.
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                new LoginUrlAuthenticationEntryPoint("/signin"), // has to be allowed in
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
@@ -78,13 +84,20 @@ public class SecurityConfig {
             throws Exception {
         http
                 .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers("/favicon.ico", "/resources/**", "/error", "/about")
+                        authorize.requestMatchers("/favicon.ico", "/resources/**", "/error",
+                                         "/about", "/authenticate", "/signin", "/login")
                                  .permitAll()
                         .anyRequest().authenticated()
                 )
                 // Form login handles the redirect to the login page from the
                 // authorization server filter chain
-                .formLogin(Customizer.withDefaults());
+                .formLogin(formLogin -> {
+                    formLogin
+                             .loginPage("/signin") // todo: has to be on server so any client can use.
+                             .usernameParameter("email")
+                             .loginProcessingUrl("/login")
+                             .passwordParameter("passcode");
+                });
 
         return http.build();
     }
@@ -107,7 +120,7 @@ public class SecurityConfig {
                                                       .clientSecret("{noop}secret")
                                                       .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                                                       .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                                                      // TODO: redirect URI needs to be public not authenticated
+                                                      // TODO: redirect URI needs to be public not authenticated(blank page)
                                                       .redirectUri("http://127.0.0.1:8080/about")
                                                       .postLogoutRedirectUri("http://127.0.0.1:8080/")
                                                       .scope(OidcScopes.OPENID)
