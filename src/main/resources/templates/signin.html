@@ -16,20 +16,20 @@
 
 <form th:action="@{/login}" method="post">
     <div>
-        <input type="text" name="email" placeholder="Username"/>
+        <input type="text" name="email" placeholder="Email"/>
     </div>
 
     <!-- Password block and actual submit button will have display:none initially -->
 
     <div id="passcode-block" style="display:none;">
-        <input type="password" name="passcode" placeholder="Password"/>
+        <input type="password" name="passcode" placeholder="Passcode"/>
     </div>
     <input type="submit" value="Log in" />
     <a href="#" onclick="callApi()">Call API</a>
 </form>
 
 <!--
-    When page loads, prompt user for email, password field is not displayed.
+    When page loads, prompt user for email, password field and submit button is not displayed.
     Email field and a button that triggers API call are displayed.
 
     When API returns a result(message and status), determine which message blocks and input fields
