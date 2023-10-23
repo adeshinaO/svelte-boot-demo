@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.sveltespring</groupId>
-	<artifactId>svelteboot</artifactId>
+	<artifactId>svelteboot1</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>svelteboot</name>
 	<description>Spring Boot + Svelte DEO</description>

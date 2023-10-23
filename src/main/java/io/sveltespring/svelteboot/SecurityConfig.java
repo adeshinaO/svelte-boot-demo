@@ -10,6 +10,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +38,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtEncodingException;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
@@ -47,8 +52,14 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.JwtGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2AccessTokenGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2RefreshTokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationConverter;
@@ -67,6 +78,7 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
         http
                 // Redirect to the login page when not authenticated from the
                 // authorization endpoint
@@ -91,8 +103,7 @@ public class SecurityConfig {
             throws Exception {
         http
                 .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers("/favicon.ico", "/resources/**", "/error",
-                                         "/about", "/authenticate", "/signin", "/login")
+                        authorize.requestMatchers("/favicon.ico", "/_app/**", "/error", "/", "/signin", "/login")
                                  .permitAll()
                         .anyRequest().authenticated()
                 )
@@ -129,10 +140,11 @@ public class SecurityConfig {
                                                       .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                                                       .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                                                       // TODO: redirect URI needs to be public not authenticated(blank page)
-                                                      .redirectUri("http://127.0.0.1:8080/about")
+                                                      .redirectUri("http://127.0.0.1:8080")
                                                       .postLogoutRedirectUri("http://127.0.0.1:8080/")
                                                       .scope(OidcScopes.OPENID)
                                                       .scope(OidcScopes.PROFILE)
+                                                      .tokenSettings(tokenSettings())
                                                       .clientSettings(ClientSettings.builder()
                                                               .requireProofKey(true).requireAuthorizationConsent(false).build())
                                                       .build();
@@ -179,7 +191,6 @@ public class SecurityConfig {
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
         return (context) -> {
-
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 context.getClaims().claims((claims) -> {
                     Set<String> roles = AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities())
@@ -190,6 +201,15 @@ public class SecurityConfig {
                 });
             }
         };
+    }
+
+    @Bean
+    public TokenSettings tokenSettings() {
+        return TokenSettings.builder()
+                            .accessTokenTimeToLive(Duration.ofHours(30L))
+                            .build();
+
+        // TODO: This needs testing
     }
 
     // TODO: see: https://www.javaadvent.com/2022/12/a-new-spring-security-authorization-server.html
